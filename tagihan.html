@@ -62,7 +62,21 @@
     </select>
 
     <label>Tahun</label>
-    <input type="number" id="tahun" placeholder="cth: 2025">
+    <select id="tahun">
+      <option value="">Pilih Tahun</option>
+      <option>2025</option>
+      <option>2026</option>
+      <option>2027</option>
+      <option>2028</option>
+      <option>2029</option>
+      <option>2030</option>
+      <option>2039</option>
+      <option>2040</option>
+      <option>2041</option>
+      <option>2042</option>
+      <option>2043</option>
+      <option>2045</option>
+    </select>
 
     <button onclick="cekTagihan()">Cek Tagihan</button>
     <div id="hasil"></div>
@@ -80,7 +94,6 @@
 
       <div id="tabQRIS" class="tab-panel active">
         <p>Scan QRIS berikut, lalu simpan bukti pembayaran.</p>
-        <!-- Ganti dengan path gambar QRIS kamu -->
         <img src="qris.png" alt="QRIS" style="width:100%;border-radius:8px;">
       </div>
 
@@ -153,7 +166,6 @@
         });
     }
 
-    // Modal Payment
     function openPayModal() {
       document.getElementById('payModal').style.display = 'block';
       switchTab('qris');
