@@ -51,7 +51,6 @@
       text-decoration: none;
       display: block;
     }
-
     .submenu {
       overflow: hidden;
       max-height: 0;
@@ -67,7 +66,6 @@
     .submenu.show {
       max-height: 200px;
     }
-
     .back-button {
       display: block;
       text-align: center;
@@ -82,7 +80,6 @@
     .back-button:hover {
       background-color: #004d40;
     }
-
     .login-top {
       position: absolute;
       top: 20px;
@@ -100,8 +97,6 @@
     .login-top button:hover {
       background-color: #004d40;
     }
-
-    /* Chat Box Styles */
     #floating-chatbox {
       position: fixed;
       bottom: 20px;
@@ -179,7 +174,6 @@
     <div class="login-top">
       <button onclick="document.getElementById('loginModal').style.display='block'">🔐 Login Admin</button>
     </div>
-
     <h1>🏡 PAGUYUBAN CITRA AMARTA</h1>
     <ul>
       <li><a href="tagihan.html">📋 Informasi Tagihan</a></li>
@@ -210,7 +204,7 @@
     </div>
   </div>
 
-  <!-- Floating Chatbox -->
+  <!-- Chatbox -->
   <div id="floating-chatbox">
     <button id="openChatBtn">💬 Aspirasi</button>
     <div id="chatContainer">
@@ -243,12 +237,6 @@
       }
     }
 
-    window.onclick = function(event) {
-      const modal = document.getElementById('loginModal');
-      if (event.target === modal) modal.style.display = "none";
-    };
-
-    // Chatbox Script
     const openChatBtn = document.getElementById('openChatBtn');
     const chatContainer = document.getElementById('chatContainer');
     const chatBoxContent = document.getElementById('chatBoxContent');
@@ -278,11 +266,11 @@
       if (!teks && !gambarFile) return;
       localStorage.setItem("aspirasiNama", nama);
 
-      const submitToSheetDB = (gambarBase64 = "") => {
+      const submitToSheetDB = (gambarURL = "") => {
         fetch("https://sheetdb.io/api/v1/8f0yu7w4xt4p7", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: { nama, teks, gambar: gambarBase64 } })
+          body: JSON.stringify({ data: { nama, teks, gambar: gambarURL } })
         })
         .then(res => res.json())
         .then(() => {
@@ -290,13 +278,37 @@
           document.getElementById('chatText').value = "";
           document.getElementById('chatImage').value = "";
         })
-        .catch(err => alert("Gagal kirim aspirasi: " + err));
+        .catch(err => {
+          console.error("❌ Gagal kirim ke SheetDB:", err);
+          alert("Gagal kirim aspirasi. Cek console (F12).");
+        });
       };
 
       if (gambarFile) {
-        const reader = new FileReader();
-        reader.onload = e => submitToSheetDB(e.target.result);
-        reader.readAsDataURL(gambarFile);
+        if (gambarFile.size > 1500000) {
+          alert("Ukuran gambar maksimal 1.5 MB");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", gambarFile);
+
+        fetch("https://api.imgbb.com/1/upload?key=40ee2c5d0fe71b0afdb293f91a003b2b", {
+          method: "POST",
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.data && data.data.url) {
+            submitToSheetDB(data.data.url);
+          } else {
+            throw new Error("Gagal upload ke ImgBB");
+          }
+        })
+        .catch(err => {
+          console.error("❌ Gagal upload gambar:", err);
+          alert("Gagal upload gambar.");
+        });
       } else {
         submitToSheetDB();
       }
@@ -320,6 +332,11 @@
       if (savedName) nameInput.value = savedName;
       fetchChatData();
       setInterval(fetchChatData, 10000);
+    };
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('loginModal');
+      if (event.target === modal) modal.style.display = "none";
     };
   </script>
 </body>
